@@ -41,7 +41,7 @@
 #define X11_OP_REQ_PUT_IMG			0x48
 #define X11_OP_REQ_GET_EXT			0x62
 
-#define PAD(x) = ((4-(x%4))%4)
+#define PAD(x) ((4-(x&3))&3)
 
 //------------------------------------------------------------------------------
 //--X11 structures
@@ -309,7 +309,7 @@ int x11_connect(struct x11_connection *conn, char *display, char *xauth)
 
 		serv_addr.sun_family = AF_UNIX;
 		strncopy(serv_addr.sun_path, "/tmp/.X11-unix/X", 16);
-		strcopy(&serv_addr.sun_path[16], &display[1],0);
+		strcopy(&serv_addr.sun_path[16], &display[1], 0);
 		srv_len = sizeof(struct sockaddr_un);
 
 		connect(conn->sock,(struct sockaddr *)&serv_addr,sizeof(serv_addr));
@@ -351,7 +351,7 @@ int x11_handshake(struct x11_connection *conn)
 
 	conn->setup = sbrk(conn->header.length*4);	//Allocate memory for remainder of data
 	read(conn->sock,conn->setup,conn->header.length*4);	//Read remainder of data
-	void* p = ((void*)conn->setup)+sizeof(struct x11_conn_setup)+conn->setup->vendor_length;	//Ignore the vendor
+	void* p = ((void*)conn->setup)+sizeof(struct x11_conn_setup)+conn->setup->vendor_length+PAD(conn->setup->vendor_length);	//Ignore the vendor
 	conn->format = p;	//Align struct with format sections
 	p += sizeof(struct x11_pixmap_format)*conn->setup->formats;	//move pointer to end of section
 	conn->root = p;	//Align struct with root section(s)
@@ -703,8 +703,8 @@ void display_str(struct x11_connection *conn, struct term_window *term, char *st
 
 void draw_text(struct x11_connection *conn, struct term_window *term, char *buffer, int len)
 {
-	display_str(conn,term,buff,term->cursor_x*psf_get_glyph_width(&term->font),term->cursor_y*psf_get_glyph_height(&term->font));
-	term.cursor_x+=n;
+	display_str(conn,term,buffer,term->cursor_x*psf_get_glyph_width(&term->font),term->cursor_y*psf_get_glyph_height(&term->font));
+	term->cursor_x+=len;
 }
 
 void draw_buffer()
