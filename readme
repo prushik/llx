@@ -1,0 +1,16 @@
+## Low-Level X (llx)
+
+This repo contains code to interface directly with an X11 server 
+without any additional run-time requirements.
+This code uses Linux system calls (either through assembly glue or 
+through C library wrappers), opens a socket to the X server (either 
+unix domain or TCP) and sends X commands. For more information about 
+how this is possible, see http://betteros.org/tut/graphics1.php
+
+For an example of how to use this code, see llxterm (in this repo), 
+which is a terminal emulator implemented using only llx.
+
+To use llx in your own project, first read the tutorial on 
+BetterOS.org, and then take a look at llx.c and llx.h, which are the 
+low-level X11 functions. You can include these files in your own 
+project, or study them and implement your own API.
