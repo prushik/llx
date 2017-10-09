@@ -13,6 +13,8 @@
 #define X11_OP_REQ_COPY_AREA		0x3E
 #define X11_OP_REQ_PUT_IMG			0x48
 #define X11_OP_REQ_GET_EXT			0x62
+#define X11_OP_REQ_GET_KEYMAP		0x65
+
 
 #define PAD(x) ((4-(x&3))&3)
 
@@ -155,6 +157,7 @@ union x11_event
 	struct x11_error error;
 	struct x11_event_key key;
 };
+
 
 //------------------------------------------------------------------------------
 //--X11 functions

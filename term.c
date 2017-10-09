@@ -339,7 +339,7 @@ int main(int argc, char **argv)
 			if (ev.key.code==X11_EV_KEY_DOWN)
 			{
 				//Send the typed letter to the client
-
+				write(term.tty, &ev.key.detail, 1);
 
 				//print the letter typed
 //				display_char(&conn,win,gc,ev.key.detail,font_pix,&font,10,10);
@@ -350,9 +350,9 @@ int main(int argc, char **argv)
 			}
 			else if (ev.key.code==X11_EV_KEY_UP)
 			{
-				write(term.tty,"ls\n",3);
-				term.cursor_x=0;
-				term.cursor_y++;
+//				write(term.tty,"ls\n",3);
+//				term.cursor_x=0;
+//				term.cursor_y++;
 //				uint16_t *tmp=&key_coord[ev.key.detail];
 //				x11_warp(&conn,conn.root[0].id,conn.root[0].id,0,0,0,0,tmp[0]*25,tmp[1]*100);
 //				x11_shape_rect(&conn, shape_base, X11_SHAPE_OP_SUB, X11_SHAPE_TYPE_BOUND, 0, win, tmp[0]*25, tmp[1]*50, 1, &rect);
@@ -370,10 +370,16 @@ int main(int argc, char **argv)
 		if (poll_fd[1].revents&(POLLIN|POLLPRI))
 		{
 			char buff[32];
-			int n = read(term.tty,buff,32);
+			int n = read(term.tty,buff,2);
 			//This needs to be a huge big function which takes the whole buffer and draws it on the screen.
 			//Maybe we can just deal with stuff as it comes in, but we still need to redraw the whole thing
 			//sometimes.
+			for (i=0; i<n; i++)
+				if (buff[i] == '\n')
+				{
+					term.cursor_x=0;
+					term.cursor_y++;
+				}
 			display_str(&conn,&term,buff,term.cursor_x*psf_get_glyph_width(&term.font),term.cursor_y*psf_get_glyph_height(&term.font));
 			term.cursor_x+=n;
 //			write(1,buff,32);

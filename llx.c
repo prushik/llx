@@ -251,13 +251,13 @@ void x11_warp(struct x11_connection *conn, uint32_t src, uint32_t dest, uint16_t
 uint8_t x11_get_ext(struct x11_connection *conn, uint16_t len, uint8_t *name)
 {
 	uint32_t packet[2];
-	uint16_t length = 2 + ((len+(4-(len%4))) / 4);
+	uint16_t length = 2 + ((len+(4-(len&3))) >> 2);
 
 	packet[0]=X11_OP_REQ_GET_EXT | length<<16;
 	packet[1]=len;
 
 	write(conn->sock,packet,8);
-	write(conn->sock,name,len+(4-(len%4)));
+	write(conn->sock,name,len+(4-(len&3)));
 
 	uint8_t response[32];
 
@@ -269,6 +269,44 @@ uint8_t x11_get_ext(struct x11_connection *conn, uint16_t len, uint8_t *name)
 		return 0;
 	return response[9];
 }
+
+//     1     101                             opcode
+//     1                                     unused
+//     2     2                               request length
+//     1     KEYCODE                         first-keycode
+//     1     m                               count
+//     2                                     unused
+
+//▶
+//     1     1                               Reply
+//     1     n                               keysyms-per-keycode
+//     2     CARD16                          sequence number
+//     4     nm                              reply length (m = count field
+//                                           from the request)
+//     24                                    unused
+//     4nm     LISTofKEYSYM                  keysyms
+
+uint8_t x11_get_keymap(struct x11_connection *conn, uint8_t first_key, uint8_t len, uint16_t *result)
+{
+	uint32_t packet[2];
+	uint16_t length = 2;
+
+	packet[0]=X11_OP_REQ_GET_KEYMAP | length << 16;
+	packet[1]=first_key | len << 24;
+
+	write(conn->sock,packet,8);
+
+	uint8_t response[8+24+(len << 2)];
+
+	read(conn->sock,response,32);
+
+	read(conn->sock, result, response[1]*len);
+
+	return response[1];
+}
+
+
+
 
 //------------------------------------------------------------------------------
 //--Shape Extension functions
