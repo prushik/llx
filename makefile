@@ -5,7 +5,7 @@ ASFLAGS = -felf64
 LDFLAGS = -nostartfiles -nostdlib
 ARCH	= amd64
 
-llxterm: libpsf.o term.o $(ARCH)_syscalls.o crt.o mem.o
+llxterm: libpsf.o term.o $(ARCH)_syscalls.o crt.o mem.o llx.o
 	$(CC) -g -o $@ $(LDFLAGS) $^ -fno-stack-protector
 
 %.o: %.c

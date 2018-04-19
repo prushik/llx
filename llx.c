@@ -292,7 +292,7 @@ uint8_t x11_get_keymap(struct x11_connection *conn, uint8_t first_key, uint8_t l
 	uint16_t length = 2;
 
 	packet[0]=X11_OP_REQ_GET_KEYMAP | length << 16;
-	packet[1]=first_key | len << 24;
+	packet[1]=first_key | len << 8;
 
 	write(conn->sock,packet,8);
 

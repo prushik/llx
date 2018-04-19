@@ -249,6 +249,7 @@ int main(int argc, char **argv)
 			if (argv[i][1]=='d')
 			{
 				//user is specifying an alternate display
+				x11_connect(&conn,argv[i+1], NULL);
 			}
 			if (argv[i][1]=='s')
 			{
@@ -267,7 +268,8 @@ int main(int argc, char **argv)
 	//
 	struct x11_connection conn = {0};
 
-	x11_connect(&conn,":0", NULL);
+	if (!conn.sock)
+		x11_connect(&conn,":0", NULL);
 
 	x11_handshake(&conn);
 
@@ -287,6 +289,9 @@ int main(int argc, char **argv)
 
 	x11_map_window(&conn,term.win);
 
+	uint8_t keymap[240<<3];
+
+	x11_get_keymap(&conn,8,240,keymap);
 
 //	//This is where we open our PSF font
 //	struct psf_font font;
@@ -339,7 +344,7 @@ int main(int argc, char **argv)
 			if (ev.key.code==X11_EV_KEY_DOWN)
 			{
 				//Send the typed letter to the client
-				write(term.tty, &ev.key.detail, 1);
+				write(term.tty, &keymap[ev.key.detail/7], 1);
 
 				//print the letter typed
 //				display_char(&conn,win,gc,ev.key.detail,font_pix,&font,10,10);
